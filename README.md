@@ -659,9 +659,3 @@ Edit scripts add restDB & prisma : seed
 
 ### npx prisma db seed คือเอาข้อมูลเข้าไปใน database
 ---
-
-## Step 8 
-
-## Step 9
-
-## Step 10
