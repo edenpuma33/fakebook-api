@@ -5,6 +5,8 @@ const errorMiddleware = require("./middlewares/errorMiddleware");
 const authRoute = require("./routes/auth-route");
 const app = express();
 
+app.use(express.json());
+
 app.use("/auth", authRoute);
 app.use("/post", (req, res) => {
   res.send("post service");
