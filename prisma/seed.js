@@ -7,13 +7,13 @@ const userData = [
   {
     firstName: "Andy",
     lastName: "Codecamp",
-    email: "andy@gmail.com",
+    email: "andy@ggg.mail",
     password: hashedPassword,
   },
   {
-    firstName: "Boby",
+    firstName: "Bobby",
     lastName: "Codecamp",
-    email: "bobby@gmail.com",
+    email: "bobby@ggg.mail",
     password: hashedPassword,
   },
   {
@@ -36,4 +36,4 @@ async function seedDB() {
   await prisma.user.createMany({ data: userData });
 }
 
-seedDB()
+seedDB();

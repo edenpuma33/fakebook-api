@@ -3,15 +3,20 @@ const prisma = require("../models");
 
 // beware order of table to delete
 async function resetDatabase() {
-  await prisma.$transaction([
-    prisma.comment.deleteMany(),
-    prisma.like.deleteMany(),
-    prisma.post.deleteMany(),
-    prisma.relationship.deleteMany(),
-    prisma.user.deleteMany(),
-  ]);
-  await prisma.$executeRawUnsafe("Alter Table user auto_increment=1");
+  const tableNames = Object.keys(prisma).filter(
+    (key) => !key.startsWith("$") && !key.startsWith("_")
+  );
+  console.log(tableNames);
+
+  for (let table of tableNames) {
+    console.log(`Rest DB & Auto_increament : ${table}`);
+    await prisma[table].deleteMany();
+    await prisma.$executeRawUnsafe(
+      `Alter Table \`${table}\` auto_increment = 1`
+    );
+  }
 }
 
-console.log("Rest DB...");
 resetDatabase();
+
+// npm run resetDB
