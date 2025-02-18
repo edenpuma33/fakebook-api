@@ -11,6 +11,7 @@ const app = express();
 // app.use(cors({
 //   origin: 'http://localhost:5173'
 // }))
+// 
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms")
 );
