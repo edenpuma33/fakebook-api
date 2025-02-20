@@ -6,12 +6,14 @@ const cors = require("cors");
 const notFound = require("./middlewares/notFound");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 const authRoute = require("./routes/auth-route");
+const postRoute = require("./routes/post-route");
+const authenticate = require("./middlewares/authenticate");
 const app = express();
 
 // app.use(cors({
 //   origin: 'http://localhost:5173'
 // }))
-// 
+//
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms")
 );
@@ -20,9 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/auth", authRoute);
-app.use("/post", (req, res) => {
-  res.send("post service");
-});
+app.use("/post", authenticate, postRoute);
 app.use("/comment", (req, res) => {
   res.send("comment service");
 });

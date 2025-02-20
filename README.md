@@ -5,27 +5,33 @@
 PORT=8899  
 DATABASE_URL=  
 JWT_SECRET=
+CLOUDINARY_NAME
+CLOUDINARY_API_KEY
+CLOUDINARY_API_SECRET
 
 ---
+
 ### service
-|path |method |authen |params |query |body |
-|:----|:-----:|:-----:|:-----:|:----:|----:|
-|/auth/register|post|-|-|-| {identity, firstName, lastName, password, confirmPassword}
-|/auth/login|post|-|-|-| {identity, password}
-|/auth/me|get|y|-|-|-|
-|/post|get|y|-|-|-|
-|/post|post|y|-|-|{message, image(file)}
-|/post|put|y|:id|-|{message, image(file)}
-|/post|delete|y|:id|-|-
-|/comment|post|y|-|-|{message, postId}
-|/like|post|y|-|-|{postId}
-|/like|delete|y|:id|-|-
+
+| path           | method | authen | params | query |                                                       body |
+| :------------- | :----: | :----: | :----: | :---: | ---------------------------------------------------------: |
+| /auth/register |  post  |   -    |   -    |   -   | {identity, firstName, lastName, password, confirmPassword} |
+| /auth/login    |  post  |   -    |   -    |   -   |                                       {identity, password} |
+| /auth/me       |  get   |   y    |   -    |   -   |                                                          - |
+| /post          |  get   |   y    |   -    |   -   |                                                          - |
+| /post          |  post  |   y    |   -    |   -   |                                     {message, image(file)} |
+| /post          |  put   |   y    |  :id   |   -   |                                     {message, image(file)} |
+| /post          | delete |   y    |  :id   |   -   |                                                          - |
+| /comment       |  post  |   y    |   -    |   -   |                                          {message, postId} |
+| /like          |  post  |   y    |   -    |   -   |                                                   {postId} |
+| /like          | delete |   y    |  :id   |   -   |                                                          - |
 
 ---
 
 ## Step 1 Install module
 
 ### Create file server.js
+
 ```bash
 npm init - y
 ```
@@ -40,28 +46,32 @@ npm init - y
 ```
 
 ### Create .gitignore
+
 ```json
 node_modules/
 .env
 ```
 
 ### Create file .env
+
 ```bash
-PORT=8899  
-DATABASE_URL=  
+PORT=8899
+DATABASE_URL=
 JWT_SECRET=
 ```
 
 ### Install Library
+
 ```bash
 npm i express dotenv nodemon cors morgan helmet
 ```
+
 ---
 
 ## Step 2 Edit server.js & Create Folder middleware, routes
 
-
 ### Create /middlewares/notFound.js
+
 ```js
 module.exports = (req, res) => {
   res.status(404).json({ message: "Service is not found" });
@@ -69,6 +79,7 @@ module.exports = (req, res) => {
 ```
 
 ### Create /middlewares/errorMiddleware.js
+
 ```js
 module.exports = (err, req, res, next) => {
   console.log(err);
@@ -78,6 +89,7 @@ module.exports = (err, req, res, next) => {
 ```
 
 ### Create /routes/auth-route.js
+
 ```js
 const express = require("express");
 const authRoute = express.Router();
@@ -96,6 +108,7 @@ module.exports = authRoute;
 ```
 
 ### Edit server.js
+
 ```js
 require("dotenv").config(); // The dotenv is a module that loads environment variables from a . env file that you create and adds them to the process.
 const express = require("express");
@@ -126,11 +139,15 @@ app.use(errorMiddleware);
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`Server on port: ${port}`));
 ```
+
 ลองทดสอบยิง api โดยใช้ Thunder Client แทน Postman
 
 ---
+
 ## Step 3 Create Folder controllers & Edit auth-route.js
+
 ### Create controllers/auth-controllers.js
+
 ```js
 module.exports.register = (req, res) => {
   res.json({ message: "Register..." });
@@ -146,6 +163,7 @@ module.exports.getMe = (req, res) => {
 ```
 
 ### Edit auth-route.js
+
 ```js
 const express = require("express");
 const { register, login, getMe } = require("../controllers/auth-controller");
@@ -157,15 +175,18 @@ authRoute.get("/me", getMe);
 
 module.exports = authRoute;
 ```
+
 ---
 
 ## Step 4 Start prisma & Edit schema.prisma
+
 ```bash
 npm i -D prisma
 npx prisma init
 ```
 
 ### schema.prisma
+
 ```bash
 generator client {
   provider = "prisma-client-js"
@@ -245,30 +266,37 @@ model Relationship {
 ```
 
 ### Edit .env
+
 ```bash
-PORT=8899  
+PORT=8899
 DATABASE_URL="mysql://root:puma32442@localhost:3306/cc19-fakebook"
 JWT_SECRET=TheSeCret
 ```
 
 ### ทำทุกครั้งที่มีการเปลี่ยนแปลงข้อมูลใน schema.prisma
+
 ```bash
 npx prisma generate
 ```
 
 ### สร้าง schema.prisma ใน mysql
+
 ```bash
 npx prisma db push
 ```
+
 ---
+
 ## Step 5 Create Fodler Utils & Edit auth-controller.js
 
 ### Install bcryptjs & jsonwebtoken
+
 ```bash
 npm i bcryptjs jsonwebtoken
 ```
 
 ### Create utilts/createError.js
+
 ```js
 module.exports = (statusCode, msg) => {
   const error = new Error(msg);
@@ -279,6 +307,7 @@ module.exports = (statusCode, msg) => {
 ```
 
 ### auth-controller.js
+
 ```js
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -389,10 +418,13 @@ module.exports.getMe = (req, res) => {
   res.json({ msg: "Getme..." });
 };
 ```
+
 ---
 
 ## Step 6 Create authenticate.js & Edit auth-route.js & Edit auth-controllers
+
 ### middlewares/authenticate.js
+
 ```js
 const jwt = require("jsonwebtoken");
 const prisma = require("../models");
@@ -432,6 +464,7 @@ module.exports = tryCatch(async (req, res, next) => {
 ```
 
 ### /routes/auth-route.js
+
 ```js
 const express = require("express");
 const { register, login, getMe } = require("../controllers/auth-controller");
@@ -446,7 +479,9 @@ module.exports = authRoute;
 ```
 
 edit getMe
+
 ### /controllers/auth-controllers.js
+
 ```js
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -557,9 +592,13 @@ module.exports.getMe = (req, res) => {
   res.json({ user: req.user });
 };
 ```
+
 ---
+
 ## Step 7 Create resetDB.js & seed.js & Edit package.json
+
 ### prisma/resetDB.js
+
 ```js
 require("dotenv").config();
 const prisma = require("../models");
@@ -579,7 +618,9 @@ async function resetDatabase() {
 console.log("Rest DB...");
 resetDatabase();
 ```
+
 ### prisma/seed.js
+
 ```js
 const prisma = require("../models");
 const bcrypt = require("bcryptjs");
@@ -629,7 +670,9 @@ seedDB();
 ```
 
 Edit scripts add restDB & prisma : seed
+
 ### package.json
+
 ```js
 {
   "name": "fb-api",
@@ -664,10 +707,11 @@ Edit scripts add restDB & prisma : seed
 ### npm run resetDB คือ reset ข้อมูลใน Database ทั้งหมด (clear database)
 
 ### npx prisma db seed คือเอาข้อมูลเข้าไปใน database
+
 ---
 
-
 ### restDB อีก version
+
 ```json
 require("dotenv").config();
 const prisma = require("../models");
@@ -694,6 +738,7 @@ resetDatabase();
 ```
 
 ### Edit server.js add cors morgan helmet
+
 ```js
 require("dotenv").config(); // The dotenv is a module that loads environment variables from a . env file that you create and adds them to the process.
 const helmet = require("helmet");
@@ -734,4 +779,415 @@ app.use(errorMiddleware);
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`Server on port: ${port}`));
+```
+
+## Step 8 Create route post-route.js
+
+เสร็จแล้วไปลงยิงใน postman http://localhost:8899/post/
+
+### post-controller.js
+
+```js
+module.exports.createPost = async (req, res) => {
+  console.log(req.body);
+  const { message } = req.body;
+  console.log(req.user);
+  console.log(req.file);
+  res.json({
+    msg: "Create Post",
+    filename: req.file.originalname,
+    message: message,
+    user: req.user.firstName,
+  });
+};
+
+module.exports.getAllPosts = async (req, res) => {
+  res.json({ msg: "Get All Post" });
+};
+
+module.exports.updatePost = async (req, res) => {
+  res.json({ msg: "Update Post" });
+};
+
+module.exports.deletePost = async (req, res) => {
+  res.json({ msg: "Delete Post" });
+};
+```
+
+---
+
+### post-route.js
+
+```js
+const express = require("express");
+const postRoute = express.Router();
+const postController = require("../controllers/post-controller");
+
+postRoute.get("/", postController.getAllPosts);
+postRoute.post("/", postController.createPost);
+postRoute.put("/:id", postController.updatePost);
+postRoute.delete("/:id", postController.deletePost);
+
+module.exports = postRoute;
+```
+
+---
+
+### Add postRoute in server.js
+
+เพิ่ม authenticate ใน /post
+
+```js
+require("dotenv").config(); // The dotenv is a module that loads environment variables from a . env file that you create and adds them to the process.
+const helmet = require("helmet");
+const morgan = require("morgan");
+const express = require("express");
+const cors = require("cors");
+const notFound = require("./middlewares/notFound");
+const errorMiddleware = require("./middlewares/errorMiddleware");
+const authRoute = require("./routes/auth-route");
+const postRoute = require("./routes/post-route");
+const authenticate = require("./middlewares/authenticate");
+const app = express();
+
+// app.use(cors({
+//   origin: 'http://localhost:5173'
+// }))
+//
+app.use(
+  morgan(":method :url :status :res[content-length] - :response-time ms")
+);
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+
+app.use("/auth", authRoute);
+app.use("/post", authenticate, postRoute);
+app.use("/comment", (req, res) => {
+  res.send("comment service");
+});
+app.use("/like", (req, res) => {
+  res.send("like service");
+});
+
+// notFound
+app.use(notFound);
+
+// errorMiddleware
+app.use(errorMiddleware);
+
+const port = process.env.PORT || 8000;
+app.listen(port, () => console.log(`Server on port: ${port}`));
+```
+
+---
+
+### install Multer
+
+```bash
+npm i multer
+```
+
+---
+
+### Create middlewares/upload.js
+
+```js
+const path = require("path");
+const multer = require("multer"); // ใช้เพื่ออัพโหลดไฟล์
+
+console.log(__dirname);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =>
+    cb(null, path.join(__dirname, "../upload-pic")),
+  filename: (req, file, cb) => {
+    console.log(file.originalname);
+    console.log(path.extname(file.originalname));
+    let fileExt = path.extname(file.originalname);
+    cb(null, `pic_${Date.now()}_${Math.round(Math.random() * 100)}${fileExt}`);
+  },
+});
+
+module.exports = multer({ storage: storage });
+```
+
+---
+
+### Create Folder upload-pic
+
+เก็บไฟล์ที่อัพโหลดไว้ในนี้
+
+### Edit post-route.js
+
+```js
+const express = require("express");
+const postRoute = express.Router();
+const postController = require("../controllers/post-controller");
+const upload = require("../middlewares/upload");
+
+postRoute.get("/", postController.getAllPosts);
+postRoute.post("/", upload.single("image"), postController.createPost);
+postRoute.put("/:id", postController.updatePost);
+postRoute.delete("/:id", postController.deletePost);
+
+module.exports = postRoute;
+```
+
+## Step 9 Use cloundinary
+
+เอาไฟล์ที่รับจาก user อัพขึ้น cloud
+### Install cloundinary
+```bash
+npm i cloudinary
+```
+### Update .env
+```json
+PORT=8899
+DATABASE_URL="mysql://root:puma32442@localhost:3306/cc19-fakebook"
+JWT_SECRET=TheSeCret
+
+CLOUDINARY_NAME= deomaog6m
+CLOUDINARY_API_KEY=235911835145741
+CLOUDINARY_API_SECRET=-8x2H5ucgFwN05JYNC3ZqVNboXM
+```
+
+### Create Folder config/cloudinary.js
+```js
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+module.exports = cloudinary;
+```
+
+สามารถสร้างโพสได้แล้ว
+### Edit post.controller.js
+```js
+const path = require("path");
+const fs = require("fs/promises");
+const tryCatch = require("../utils/tryCatch");
+const cloudinary = require("../config/cloudinary");
+const prisma = require("../models");
+
+module.exports.createPost = tryCatch(async (req, res) => {
+  const { message } = req.body;
+  const haveFile = !!req.file;
+  let uploadResult = {};
+  if (haveFile) {
+    uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      overwrite: true,
+      public_id: path.parse(req.file.path).name,
+    });
+    fs.unlink(req.file.path);
+  }
+  //   console.log(uploadResult);
+  const data = {
+    message: message,
+    image: uploadResult.secure_url || "",
+    userId: req.user.id,
+  };
+  const rs = await prisma.post.create({ data: data });
+  res.status(201).json({ msg: "create post done", result: rs });
+});
+
+module.exports.getAllPosts = async (req, res) => {
+  res.json({ msg: "Get All Post" });
+};
+
+module.exports.updatePost = async (req, res) => {
+  res.json({ msg: "Update Post" });
+};
+
+module.exports.deletePost = async (req, res) => {
+  res.json({ msg: "Delete Post" });
+};
+```
+---
+
+## Step 10 Edit post-controllers
+### post-controllers
+update getAllPosts
+```js
+const path = require("path");
+const fs = require("fs/promises");
+const tryCatch = require("../utils/tryCatch");
+const cloudinary = require("../config/cloudinary");
+const prisma = require("../models");
+
+module.exports.createPost = tryCatch(async (req, res) => {
+  const { message } = req.body;
+  const haveFile = !!req.file;
+  let uploadResult = {};
+  if (haveFile) {
+    uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      overwrite: true,
+      public_id: path.parse(req.file.path).name,
+    });
+    fs.unlink(req.file.path);
+  }
+  //   console.log(uploadResult);
+  const data = {
+    message: message,
+    image: uploadResult.secure_url || "",
+    userId: req.user.id,
+  };
+  const rs = await prisma.post.create({ data: data });
+  res.status(201).json({ msg: "create post done", result: rs });
+});
+
+module.exports.getAllPosts = tryCatch(async (req, res) => {
+  // ชื่อต้องเหมือนในตาราง prisma
+  const rs = await prisma.post.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          profileImage: true,
+        },
+      },
+      comment: {
+        // select: {
+        //   message: true,
+        // },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      Like: {
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  res.json({ posts: rs });
+});
+
+module.exports.updatePost = async (req, res) => {
+  res.json({ msg: "Update Post" });
+};
+
+module.exports.deletePost = async (req, res) => {
+  res.json({ msg: "Delete Post" });
+};
+```
+
+## Step 11 Delete Post Edit post-controller.js
+
+### post-controller.js
+ตอนนี้สามารถลบโพสใน postman ได้แล้ว
+
+ต้องแปลง id ที่รับจาก params ที่เป็น string เป็น integer โดยใส่ +id เนื่องจากเรากำหนด id ใน prisma เป็น INT
+```js
+const path = require("path");
+const fs = require("fs/promises");
+const tryCatch = require("../utils/tryCatch");
+const cloudinary = require("../config/cloudinary");
+const prisma = require("../models");
+const createError = require("../utils/createError");
+
+module.exports.createPost = tryCatch(async (req, res) => {
+  const { message } = req.body;
+  const haveFile = !!req.file;
+  let uploadResult = {};
+  if (haveFile) {
+    uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      overwrite: true,
+      public_id: path.parse(req.file.path).name,
+    });
+    fs.unlink(req.file.path);
+  }
+  //   console.log(uploadResult);
+  const data = {
+    message: message,
+    image: uploadResult.secure_url || "",
+    userId: req.user.id,
+  };
+  const rs = await prisma.post.create({ data: data });
+  res.status(201).json({ msg: "create post done", result: rs });
+});
+
+module.exports.getAllPosts = tryCatch(async (req, res) => {
+  // ชื่อต้องเหมือนในตาราง prisma
+  const rs = await prisma.post.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+          profileImage: true,
+        },
+      },
+      comment: {
+        // select: {
+        //   message: true,
+        // },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      Like: {
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  res.json({ posts: rs });
+});
+
+module.exports.updatePost = async (req, res) => {
+  res.json({ msg: "Update Post" });
+};
+
+module.exports.deletePost = tryCatch(async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    createError(400, "require id parameter");
+  }
+  const postData = await prisma.post.findUnique({
+    where: {
+      id: +id,
+    },
+  });
+  console.log(postData);
+  if (req.user.id !== postData.userId) {
+    createError(400, "You don't have this permission");
+  }
+  const rs = await prisma.post.delete({
+    where: { id: +id },
+  });
+  res.json({ msg: `Delete post id=${id} done`, deletedPost: postData });
+});
 ```
